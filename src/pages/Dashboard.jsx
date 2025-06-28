@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import useAuth from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
@@ -17,9 +17,10 @@ export default function Dashboard() {
   const fetchEntries = async () => {
     try {
       const res = await axios.get(`${API}/borrow`, { withCredentials: true });
-      setEntries(res.data);
+      setEntries(Array.isArray(res.data.data) ? res.data.data : []);
     } catch (err) {
       console.error(err);
+      setEntries([]); // fallback to empty array on error
     } finally {
       setLoading(false);
     }
