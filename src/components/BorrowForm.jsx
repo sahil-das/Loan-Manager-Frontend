@@ -19,6 +19,15 @@ export default function BorrowForm({ onAdd }) {
   return (
     <form onSubmit={handleSubmit} className="mb-6 bg-white p-4 rounded shadow">
       <div className="flex flex-col sm:flex-row gap-4">
+
+        <input
+          type="text"
+          placeholder="Name (Person)"
+          className="border p-2 rounded w-full"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          required
+        />
         <input
           type="text"
           placeholder="Description"
@@ -43,14 +52,7 @@ export default function BorrowForm({ onAdd }) {
           <option value="borrow">Borrow</option>
           <option value="repay">Repay</option>
         </select>
-        <input
-          type="text"
-          placeholder="Name (Person)"
-          className="border p-2 rounded w-full"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          required
-        />
+
         <button
           type="submit"
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"

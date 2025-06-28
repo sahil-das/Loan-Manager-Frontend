@@ -2,11 +2,21 @@ import { useState } from "react";
 
 export default function BorrowList({ entries, onEdit, onDelete }) {
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ description: "", amount: "", type: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    amount: "",
+    type: "",
+  });
 
   const handleEditClick = (entry) => {
     setEditId(entry._id);
-    setFormData({ description: entry.description, amount: entry.amount, type: entry.type });
+    setFormData({
+      name: entry.name || entry.note || "",
+      description: entry.description || "",
+      amount: entry.amount,
+      type: entry.type,
+    });
   };
 
   const handleSave = () => {
@@ -15,11 +25,12 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <table className="w-full text-left">
+    <div className="bg-white p-4 rounded shadow overflow-x-auto">
+      <table className="w-full text-left min-w-[700px]">
         <thead>
           <tr className="border-b">
-            <th className="py-2">Description</th>
+            <th className="py-2">Name</th>
+            <th>Description</th>
             <th>Amount</th>
             <th>Type</th>
             <th>Date</th>
@@ -31,6 +42,16 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
             <tr key={entry._id} className="border-b hover:bg-gray-50">
               {editId === entry._id ? (
                 <>
+                  <td>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="border p-1 rounded w-full"
+                    />
+                  </td>
                   <td>
                     <input
                       type="text"
@@ -63,7 +84,7 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                       <option value="repay">Repay</option>
                     </select>
                   </td>
-                  <td>{new Date(entry.createdAt).toLocaleDateString()}</td>
+                  <td>{new Date(entry.date).toLocaleDateString()}</td>
                   <td className="flex gap-2">
                     <button
                       onClick={handleSave}
@@ -81,10 +102,11 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                 </>
               ) : (
                 <>
-                  <td>{entry.description}</td>
+                  <td>{entry.name || entry.note || "-"}</td>
+                  <td>{entry.description || "-"}</td>
                   <td>₹{entry.amount}</td>
                   <td>{entry.type}</td>
-                  <td>{new Date(entry.createdAt).toLocaleDateString()}</td>
+                  <td>{new Date(entry.date).toLocaleDateString()}</td>
                   <td className="flex gap-2">
                     <button
                       onClick={() => handleEditClick(entry)}
