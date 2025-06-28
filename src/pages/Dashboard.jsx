@@ -19,6 +19,7 @@ export default function Dashboard() {
   const fetchEntries = async () => {
     try {
       const res = await axios.get(`${API}/borrow`, { withCredentials: true });
+      console.log(res);
       setEntries(Array.isArray(res.data.data) ? res.data.data : []);
     } catch (err) {
       console.error(err);
@@ -30,12 +31,15 @@ export default function Dashboard() {
 
   const handleAdd = async (entry) => {
     const res = await axios.post(`${API}/borrow`, entry, { withCredentials: true });
+    console.log(res);
     setEntries([...entries, res.data]);
   };
 
   const handleEdit = async (id, updatedEntry) => {
     await axios.put(`${API}/borrow/${id}`, updatedEntry, { withCredentials: true });
+    console.log(updatedEntry)
     setEntries(entries.map((e) => (e._id === id ? { ...e, ...updatedEntry } : e)));
+    
   };
 
   const handleDelete = async (id) => {
