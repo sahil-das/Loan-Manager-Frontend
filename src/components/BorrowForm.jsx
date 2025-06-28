@@ -4,16 +4,16 @@ export default function BorrowForm({ onAdd }) {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("borrow");
-  const [note, setNote] = useState("");
+  const [name, setName] = useState(""); // was 'note'
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!description || !amount || !note) return;
-    onAdd({ description, amount, type, note });
+    if (!description || !amount || !name) return;
+    onAdd({ description, amount, type, name }); // was 'note'
     setDescription("");
     setAmount("");
     setType("borrow");
-    setNote("");
+    setName(""); // was setNote
   };
 
   return (
@@ -24,8 +24,8 @@ export default function BorrowForm({ onAdd }) {
           type="text"
           placeholder="Name (Person)"
           className="border p-2 rounded w-full"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
+          value={name} // was note
+          onChange={(e) => setName(e.target.value)} // was setNote
           required
         />
         <input

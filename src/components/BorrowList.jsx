@@ -1,18 +1,15 @@
 import { useState } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function BorrowList({ entries, onEdit, onDelete }) {
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    amount: "",
-    type: "",
-  });
+  const [formData, setFormData] = useState({ name: "", description: "", amount: "", type: "" });
 
   const handleEditClick = (entry) => {
     setEditId(entry._id);
     setFormData({
-      name: entry.name || entry.note || "",
+      name: entry.name || "",
       description: entry.description || "",
       amount: entry.amount,
       type: entry.type,
@@ -24,9 +21,75 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
     setEditId(null);
   };
 
+const exportPDF = () => {
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text("Loan Entries by Name", 14, 16);
+
+  // Group entries by name
+  const grouped = {};
+  entries.forEach((entry) => {
+    const name = entry.name || "Unknown";
+    if (!grouped[name]) grouped[name] = [];
+    grouped[name].push(entry);
+  });
+
+  // Section 1: Grouped by name
+  let yOffset = 24;
+  Object.keys(grouped).forEach((name) => {
+    autoTable(doc, {
+      startY: yOffset,
+      head: [[`Name: ${name}`, "", "", "", ""]],
+      body: [],
+      theme: 'plain',
+      styles: { fontStyle: 'bold' },
+    });
+
+    autoTable(doc, {
+      startY: doc.previousAutoTable.finalY + 2,
+      head: [["Description", "Amount", "Type", "Date"]],
+      body: grouped[name].map((e) => [
+        e.description,
+        "₹" + e.amount,
+        e.type,
+        new Date(e.date).toLocaleDateString(),
+      ]),
+    });
+
+    yOffset = doc.previousAutoTable.finalY + 10;
+  });
+
+  // Add a new page for full list
+  doc.addPage();
+  doc.text("All Loan Entries", 14, 16);
+
+  autoTable(doc, {
+    startY: 22,
+    head: [["Name", "Description", "Amount", "Type", "Date"]],
+    body: entries.map((entry) => [
+      entry.name || "",
+      entry.description || "",
+      "₹" + entry.amount,
+      entry.type,
+      new Date(entry.date).toLocaleDateString(),
+    ]),
+  });
+
+  doc.save("loan_entries.pdf");
+};
+
+
   return (
-    <div className="bg-white p-4 rounded shadow overflow-x-auto">
-      <table className="w-full text-left min-w-[700px]">
+    <div className="bg-white p-4 rounded shadow">
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={exportPDF}
+          className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+        >
+          Export as PDF
+        </button>
+      </div>
+      <table className="w-full text-left">
         <thead>
           <tr className="border-b">
             <th className="py-2">Name</th>
@@ -102,8 +165,8 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                 </>
               ) : (
                 <>
-                  <td>{entry.name || entry.note || "-"}</td>
-                  <td>{entry.description || "-"}</td>
+                  <td>{entry.name}</td>
+                  <td>{entry.description}</td>
                   <td>₹{entry.amount}</td>
                   <td>{entry.type}</td>
                   <td>{new Date(entry.date).toLocaleDateString()}</td>

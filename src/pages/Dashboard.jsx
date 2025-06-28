@@ -55,7 +55,7 @@ export default function Dashboard() {
   // Group entries by person (note)
   const grouped = {};
   entries.forEach(e => {
-    const person = e.note || "(No Name)";
+    const person = e.name || "(No Name)";
     if (!grouped[person]) grouped[person] = [];
     grouped[person].push(e);
   });
