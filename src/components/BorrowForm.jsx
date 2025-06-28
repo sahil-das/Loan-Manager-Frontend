@@ -4,14 +4,16 @@ export default function BorrowForm({ onAdd }) {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("borrow");
+  const [note, setNote] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!description || !amount) return;
-    onAdd({ description, amount, type });
+    if (!description || !amount || !note) return;
+    onAdd({ description, amount, type, note });
     setDescription("");
     setAmount("");
     setType("borrow");
+    setNote("");
   };
 
   return (
@@ -41,6 +43,14 @@ export default function BorrowForm({ onAdd }) {
           <option value="borrow">Borrow</option>
           <option value="repay">Repay</option>
         </select>
+        <input
+          type="text"
+          placeholder="Name (Person)"
+          className="border p-2 rounded w-full"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          required
+        />
         <button
           type="submit"
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
