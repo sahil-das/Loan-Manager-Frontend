@@ -4,7 +4,8 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import Navbar from './components/Navbar';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext.jsx';
+import useAuth from './context/useAuth';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
