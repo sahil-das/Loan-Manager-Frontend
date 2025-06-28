@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [authLoading, setAuthLoading] = useState(true);
 
   const login = async (email, password, remember) => {
-    console.log({ email, password, remember });
     const res = await axios.post(
       `${API}/auth/login`,
       { email, password, remember },
@@ -29,7 +28,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (name, email, phone, password) => {
-    console.log({ name, email, phone, password });
     const res = await axios.post(`${API}/auth/register`, {
       name,
       email,

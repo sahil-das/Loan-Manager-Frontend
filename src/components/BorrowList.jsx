@@ -21,74 +21,9 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
     setEditId(null);
   };
 
-const exportPDF = () => {
-  const doc = new jsPDF();
-  doc.setFontSize(16);
-  doc.text("Loan Entries by Name", 14, 16);
-
-  // Group entries by name
-  const grouped = {};
-  entries.forEach((entry) => {
-    const name = entry.name || "Unknown";
-    if (!grouped[name]) grouped[name] = [];
-    grouped[name].push(entry);
-  });
-
-  // Section 1: Grouped by name
-  let yOffset = 24;
-  Object.keys(grouped).forEach((name) => {
-    autoTable(doc, {
-      startY: yOffset,
-      head: [[`Name: ${name}`, "", "", "", ""]],
-      body: [],
-      theme: 'plain',
-      styles: { fontStyle: 'bold' },
-    });
-
-    autoTable(doc, {
-      startY: doc.previousAutoTable.finalY + 2,
-      head: [["Description", "Amount", "Type", "Date"]],
-      body: grouped[name].map((e) => [
-        e.description,
-        "₹" + e.amount,
-        e.type,
-        new Date(e.date).toLocaleDateString(),
-      ]),
-    });
-
-    yOffset = doc.previousAutoTable.finalY + 10;
-  });
-
-  // Add a new page for full list
-  doc.addPage();
-  doc.text("All Loan Entries", 14, 16);
-
-  autoTable(doc, {
-    startY: 22,
-    head: [["Name", "Description", "Amount", "Type", "Date"]],
-    body: entries.map((entry) => [
-      entry.name || "",
-      entry.description || "",
-      "₹" + entry.amount,
-      entry.type,
-      new Date(entry.date).toLocaleDateString(),
-    ]),
-  });
-
-  doc.save("loan_entries.pdf");
-};
-
-
   return (
     <div className="bg-white p-4 rounded shadow">
-      <div className="flex justify-end mb-2">
-        <button
-          onClick={exportPDF}
-          className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-        >
-          Export as PDF
-        </button>
-      </div>
+
       <table className="w-full text-left">
         <thead>
           <tr className="border-b">
