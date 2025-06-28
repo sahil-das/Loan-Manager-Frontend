@@ -15,7 +15,7 @@ export default function Admin() {
       try {
         const res = await axios.get(`${API}/admin/users`, { withCredentials: true });
         setUsers(res.data);
-      } catch (err) {
+      } catch {
         setUsers([]);
       } finally {
         setLoading(false);

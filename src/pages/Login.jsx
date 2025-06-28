@@ -5,19 +5,26 @@ import useAuth from "../context/useAuth";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false); // <-- Add this
 
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard", { replace: true });  // prevent going back
+    }
+  }, [user]);
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await login(email, password, remember);
       navigate("/");
-    } catch (err) {
+    } catch {
       setError("Invalid email or password");
     }
   };

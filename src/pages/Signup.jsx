@@ -5,13 +5,20 @@ import useAuth from "../context/useAuth";
 export default function Signup() {
   const { signup } = useAuth();
   const navigate = useNavigate();
-
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [showPassword, setShowPassword] = useState(false); // <-- Add this
+
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard", { replace: true });  // prevent going back
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
