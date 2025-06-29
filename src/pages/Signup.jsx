@@ -27,8 +27,8 @@ export default function Signup() {
     setLoading(true);
 
     // Password validation: must be more than 6 characters
-    if (password.length <= 6) {
-      setErr("Password must be more than 6 characters");
+    if (password.length < 6) {
+      setErr("Password must be minimum 6 characters");
       setLoading(false);
       return;
     }
