@@ -2,6 +2,8 @@ import { useState , useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 import useAuth from "../context/useAuth";
+import Loading from "../components/Loading";
+
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -13,6 +15,8 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [showPassword, setShowPassword] = useState(false); // <-- Add this
+  const [loading, setLoading] = useState(false);
+
 
 
   useEffect(() => {
@@ -23,20 +27,25 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await signup(name, email, phone, password);
       navigate("/");
     } catch (err) {
       if (err.response && err.response.data && err.response.data.message) {
-        setErr(err.response.data.message); // ✅ Show exact error
+        setErr(err.response.data.message);
       } else {
         setErr("An unexpected error occurred");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex justify-center items-center h-screen bg-gradient-to-r from-yellow-100 to-teal-100">
+    {loading && <Loading />}
+
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
 
@@ -88,10 +97,12 @@ export default function Signup() {
 
         <button
           type="submit"
-          className="bg-green-500 text-white py-2 px-4 w-full rounded hover:bg-green-600"
+          className="bg-green-500 text-white py-2 px-4 w-full rounded hover:bg-green-600 disabled:opacity-50"
+          disabled={loading}
         >
-          Sign Up
+          {loading ? "Creating Account..." : "Sign Up"}
         </button>
+
 
         <p className="mt-4 text-sm text-center">
           Already have an account?{" "}
