@@ -3,7 +3,12 @@ import { toast } from "react-toastify";
 
 export default function BorrowList({ entries, onEdit, onDelete }) {
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ name: "", description: "", amount: "", type: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    amount: "",
+    type: "",
+  });
 
   const handleEditClick = (entry) => {
     setEditId(entry._id);
@@ -22,8 +27,11 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
   };
 
   const handleDelete = (id) => {
-    onDelete(id);
-    toast.success("Entry deleted");
+    const confirmDelete = window.confirm("Are you sure you want to delete this entry?");
+    if (confirmDelete) {
+      onDelete(id);
+      toast.success("Entry deleted");
+    }
   };
 
   return (
@@ -87,7 +95,9 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                         <option value="repay">Repay</option>
                       </select>
                     </td>
-                    <td className="p-2">{new Date(entry.date).toLocaleDateString()}</td>
+                    <td className="p-2">
+                      {new Date(entry.date).toLocaleDateString()}
+                    </td>
                     <td className="p-2 flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={handleSave}
@@ -109,7 +119,9 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                     <td className="p-2">{entry.description}</td>
                     <td className="p-2">₹{entry.amount}</td>
                     <td className="p-2">{entry.type}</td>
-                    <td className="p-2">{new Date(entry.date).toLocaleDateString()}</td>
+                    <td className="p-2">
+                      {new Date(entry.date).toLocaleDateString()}
+                    </td>
                     <td className="p-2 flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => handleEditClick(entry)}
