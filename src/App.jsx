@@ -6,6 +6,8 @@ import Admin from './pages/Admin';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext.jsx';
 import useAuth from './context/useAuth';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -21,46 +23,24 @@ function AppRoutes() {
   return (
     <>
       <Navbar />
+
+      {/* Global toast support */}
+      <ToastContainer position="top-center" autoClose={3000} />
+
       <Routes>
-        {/* Redirect root to dashboard if logged in */}
-        <Route path="/" element={<Navigate to="/dashboard" />} />
+        {/* Root path auto-redirect */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <PublicRoute>
-              <Signup />
-            </PublicRoute>
-          }
-        />
+        {/* Public-only routes */}
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
 
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
+        {/* Auth-protected routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
 
-        {/* Catch-all for unknown routes */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* Fallback for unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
