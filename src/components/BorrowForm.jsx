@@ -1,29 +1,25 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
-export default function BorrowForm({ onAdd }) {
+export default function BorrowForm({ onAdd, defaultName = "" }) {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("borrow");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultName);
   const [date, setDate] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const nameRef = useRef(null); // for auto-focus
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
     setDate(today);
-    nameRef.current?.focus(); // auto-focus on mount
   }, []);
 
   const resetForm = () => {
     setDescription("");
     setAmount("");
     setType("borrow");
-    setName("");
+    setName(defaultName);
     const today = new Date().toISOString().split("T")[0];
     setDate(today);
-    nameRef.current?.focus();
   };
 
   const capitalizeWords = (str) =>
@@ -33,37 +29,30 @@ export default function BorrowForm({ onAdd }) {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!amount || isNaN(amount) || Number(amount) <= 0 || !name.trim()) {
-      toast.error("Please fill in Name and Amount correctly.");
+    if (!amount || isNaN(amount) || Number(amount) <= 0 || (!name && !defaultName)) {
+      toast.error("Please fill in all required fields.");
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const formattedName = capitalizeWords(name.trim());
+    const finalName = capitalizeWords((defaultName || name).trim());
 
-      const entry = {
-        name: formattedName,
-        description: description.trim(), // optional
-        amount: Number(amount),
-        type,
-        date,
-      };
+    const entry = {
+      name: finalName,
+      description: description.trim(), // description is optional
+      amount: Number(amount),
+      type,
+      date,
+    };
 
-      await onAdd(entry);
-      toast.success("Entry added successfully!");
-      resetForm();
-    } catch (err) {
-      toast.error("Failed to add entry.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    onAdd(entry);
+    toast.success("Entry added successfully!");
+    resetForm();
   };
 
-  const isSubmitDisabled = !amount || !name || Number(amount) <= 0 || isSubmitting;
+  const isSubmitDisabled = !amount || Number(amount) <= 0 || (!name && !defaultName);
 
   return (
     <form
@@ -71,17 +60,16 @@ export default function BorrowForm({ onAdd }) {
       className="mb-6 bg-white p-4 rounded shadow w-full"
     >
       <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
-        <input
-          ref={nameRef}
-          type="text"
-          placeholder="Name (Person)"
-          className="border p-2 rounded w-full md:flex-1"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          aria-label="Person's Name"
-          title="Enter the person's name"
-        />
+        {!defaultName && (
+          <input
+            type="text"
+            placeholder="Name (Person)"
+            className="border p-2 rounded w-full md:flex-1"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        )}
 
         <input
           type="text"
@@ -89,8 +77,6 @@ export default function BorrowForm({ onAdd }) {
           className="border p-2 rounded w-full md:flex-2"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          aria-label="Description"
-          title="Enter optional description"
         />
 
         <input
@@ -101,15 +87,12 @@ export default function BorrowForm({ onAdd }) {
           onChange={(e) => setAmount(e.target.value)}
           min="1"
           required
-          aria-label="Amount"
-          title="Enter a valid amount greater than 0"
         />
 
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
           className="border p-2 rounded w-full md:w-32"
-          aria-label="Transaction Type"
         >
           <option value="borrow">Borrow</option>
           <option value="repay">Repay</option>
@@ -120,30 +103,19 @@ export default function BorrowForm({ onAdd }) {
           className="border p-2 rounded w-full md:w-40"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          aria-label="Date"
         />
 
-        <div className="flex gap-2 w-full md:w-auto">
-          <button
-            type="submit"
-            disabled={isSubmitDisabled}
-            className={`text-white px-4 py-2 rounded w-full md:w-auto ${
-              isSubmitDisabled
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-          >
-            {isSubmitting ? "Adding..." : "Add"}
-          </button>
-
-          <button
-            type="button"
-            onClick={resetForm}
-            className="text-gray-600 border border-gray-400 px-4 py-2 rounded hover:bg-gray-100"
-          >
-            Reset
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={isSubmitDisabled}
+          className={`text-white px-4 py-2 rounded w-full md:w-auto ${
+            isSubmitDisabled
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
+        >
+          Add
+        </button>
       </div>
     </form>
   );
