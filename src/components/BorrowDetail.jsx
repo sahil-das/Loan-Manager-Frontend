@@ -1,101 +1,93 @@
-import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import React, { useState } from "react";
+import BorrowForm from "./BorrowForm";
+import ConfirmDialog from "./ConfirmDialog";
 
-export default function BorrowForm({ onAdd, defaultName }) {
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [type, setType] = useState("borrow");
-  const [date, setDate] = useState("");
+export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, onDelete }) {
+  const [showForm, setShowForm] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDeleteId, setToDeleteId] = useState(null);
 
-  // Auto-fill today's date on mount
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    setDate(today);
-  }, []);
+  // Filter and sort entries for this person
+  const filtered = entries.filter((e) => e.name === person).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  const resetForm = () => {
-    setDescription("");
-    setAmount("");
-    setType("borrow");
-    const today = new Date().toISOString().split("T")[0];
-    setDate(today);
-  };
+  // Calculate running balance
+  let balance = 0;
+  const rows = filtered.map((e) => {
+    if (e.type === "borrow") balance += Number(e.amount);
+    else if (e.type === "repay") balance -= Number(e.amount);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    return (
+      <tr key={e._id}>
+        <td>{new Date(e.date).toLocaleDateString()}</td>
+        <td>{e.type === "borrow" ? `Borrowed ₹${e.amount}` : `Repaid ₹${e.amount}`}</td>
+        <td>{balance}</td>
+        <td>
+          <button className="text-blue-600" onClick={() => onEdit && onEdit(e._id, e)}>
+            Edit
+          </button>
+        </td>
+        <td>
+          <button
+            className="text-red-600"
+            onClick={() => {
+              setToDeleteId(e._id);
+              setConfirmOpen(true);
+            }}
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    );
+  });
 
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      toast.error("Please enter a valid amount.");
-      return;
+  const handleConfirmDelete = () => {
+    if (toDeleteId && onDelete) {
+      onDelete(toDeleteId);
     }
-
-    const entry = {
-      name: defaultName,
-      description: description.trim() || "", // Optional
-      amount: Number(amount),
-      type,
-      date,
-    };
-
-    onAdd(entry);
-    toast.success("Entry added successfully!");
-    resetForm();
+    setToDeleteId(null);
   };
 
-  const isSubmitDisabled = !amount || Number(amount) <= 0;
+  const handleAdd = (entry) => {
+    onAdd({ ...entry, name: person });
+    setShowForm(false);
+  };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mb-6 bg-white p-4 rounded shadow w-full"
-    >
-      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
-        <input
-          type="text"
-          placeholder="Description (optional)"
-          className="border p-2 rounded w-full md:flex-2"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+    <div className="bg-white p-4 rounded shadow">
+      <button className="mb-4 text-blue-600" onClick={onBack}>
+        &larr; Back to Overview
+      </button>
+      <h3 className="text-xl font-bold mb-2">Details for: {person}</h3>
 
-        <input
-          type="number"
-          placeholder="Amount"
-          className="border p-2 rounded w-full md:w-32"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          min="1"
-          required
-        />
+      <button
+        className="mb-4 px-3 py-1 bg-blue-500 text-white rounded"
+        onClick={() => setShowForm(!showForm)}
+      >
+        {showForm ? "Cancel" : `Add Borrow/Repay for ${person}`}
+      </button>
 
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          className="border p-2 rounded w-full md:w-32"
-        >
-          <option value="borrow">Borrow</option>
-          <option value="repay">Repay</option>
-        </select>
+      {showForm && <BorrowForm onAdd={handleAdd} defaultName={person} />}
 
-        <input
-          type="date"
-          className="border p-2 rounded w-full md:w-40"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+      <table className="w-full text-left border-t mt-4">
+        <thead>
+          <tr className="border-b">
+            <th className="py-2">Date</th>
+            <th className="py-2">Action</th>
+            <th className="py-2">Balance After</th>
+            <th className="py-2">Edit</th>
+            <th className="py-2">Delete</th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
 
-        <button
-          type="submit"
-          disabled={isSubmitDisabled}
-          className={`text-white px-4 py-2 rounded w-full md:w-auto ${
-            isSubmitDisabled
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
-          }`}
-        >
-          Add
-        </button>
-      </div>
-    </form>
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        message="Are you sure you want to delete this entry?"
+      />
+    </div>
   );
 }
