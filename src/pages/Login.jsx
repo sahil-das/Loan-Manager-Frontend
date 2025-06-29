@@ -28,12 +28,12 @@ export default function Login() {
     try {
       await login(email, password, remember);
       navigate("/");
+      setLoading(false)
     } catch {
       setError("Invalid email or password");
+      setLoading(false)
 
-    } finally{
-      setLoading(false);
-    }
+    } 
   };
 
   return (
