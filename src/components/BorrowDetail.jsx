@@ -3,55 +3,52 @@ import BorrowForm from "./BorrowForm";
 import ConfirmDialog from "./ConfirmDialog";
 
 export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, onDelete }) {
-  const [showForm, setShowForm] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [toDeleteId, setToDeleteId] = useState(null);
-
-  // Filter and sort entries for this person
   const filtered = entries.filter((e) => e.name === person).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Calculate running balance
   let balance = 0;
-  const rows = filtered.map((e) => {
-    if (e.type === "borrow") balance += Number(e.amount);
-    else if (e.type === "repay") balance -= Number(e.amount);
-
-    return (
-      <tr key={e._id}>
-        <td>{new Date(e.date).toLocaleDateString()}</td>
-        <td>{e.type === "borrow" ? `Borrowed ₹${e.amount}` : `Repaid ₹${e.amount}`}</td>
-        <td>{balance}</td>
-        <td>
-          <button className="text-blue-600" onClick={() => onEdit && onEdit(e._id, e)}>
-            Edit
-          </button>
-        </td>
-        <td>
-          <button
-            className="text-red-600"
-            onClick={() => {
-              setToDeleteId(e._id);
-              setConfirmOpen(true);
-            }}
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    );
-  });
-
-  const handleConfirmDelete = () => {
-    if (toDeleteId && onDelete) {
-      onDelete(toDeleteId);
-    }
-    setToDeleteId(null);
-  };
+  const [editId, setEditId] = useState(null);
+  const [confirmId, setConfirmId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   const handleAdd = (entry) => {
     onAdd({ ...entry, name: person });
     setShowForm(false);
   };
+
+  const handleUpdate = (id, entry) => {
+    onEdit(id, { ...entry, name: person });
+    setEditId(null);
+  };
+
+  const rows = filtered.map((e) => {
+    if (e.type === "borrow") balance += Number(e.amount);
+    else if (e.type === "repay") balance -= Number(e.amount);
+
+    return editId === e._id ? (
+      <tr key={e._id}>
+        <td colSpan="5">
+          <BorrowForm
+            defaultValues={e}
+            onAdd={(updated) => handleUpdate(e._id, updated)}
+            isEdit
+            onCancel={() => setEditId(null)}
+          />
+        </td>
+      </tr>
+    ) : (
+      <tr key={e._id}>
+        <td>{new Date(e.date).toLocaleDateString()}</td>
+        <td>{e.type === "borrow" ? `Borrowed ₹${e.amount}` : `Repaid ₹${e.amount}`}</td>
+        <td>₹{balance}</td>
+        <td>
+          <button className="text-blue-600" onClick={() => setEditId(e._id)}>Edit</button>
+        </td>
+        <td>
+          <button className="text-red-600" onClick={() => setConfirmId(e._id)}>Delete</button>
+        </td>
+      </tr>
+    );
+  });
 
   return (
     <div className="bg-white p-4 rounded shadow">
@@ -67,25 +64,29 @@ export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, o
         {showForm ? "Cancel" : `Add Borrow/Repay for ${person}`}
       </button>
 
-      {showForm && <BorrowForm onAdd={handleAdd} defaultName={person} />}
+      {showForm && <BorrowForm onAdd={handleAdd} defaultValues={{ name: person }} />}
 
-      <table className="w-full text-left border-t mt-4">
-        <thead>
-          <tr className="border-b">
-            <th className="py-2">Date</th>
-            <th className="py-2">Action</th>
-            <th className="py-2">Balance After</th>
-            <th className="py-2">Edit</th>
-            <th className="py-2">Delete</th>
+      <table className="w-full text-left text-sm sm:text-base">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-2">Date</th>
+            <th className="p-2">Action</th>
+            <th className="p-2">Balance After</th>
+            <th className="p-2">Edit</th>
+            <th className="p-2">Delete</th>
           </tr>
         </thead>
         <tbody>{rows}</tbody>
       </table>
 
+      {/* Confirm Delete Dialog */}
       <ConfirmDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={handleConfirmDelete}
+        open={!!confirmId}
+        onClose={() => setConfirmId(null)}
+        onConfirm={() => {
+          onDelete(confirmId);
+          setConfirmId(null);
+        }}
         message="Are you sure you want to delete this entry?"
       />
     </div>
