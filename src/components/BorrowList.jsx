@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import ConfirmDialog from "./ConfirmDialog";
 
 export default function BorrowList({ entries, onEdit, onDelete }) {
   const [editId, setEditId] = useState(null);
@@ -9,6 +10,8 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
     amount: "",
     type: "",
   });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   const handleEditClick = (entry) => {
     setEditId(entry._id);
@@ -26,11 +29,16 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
     setEditId(null);
   };
 
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this entry?");
-    if (confirmDelete) {
-      onDelete(id);
+  const askDeleteConfirmation = (id) => {
+    setDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      onDelete(deleteId);
       toast.success("Entry deleted");
+      setDeleteId(null);
     }
   };
 
@@ -95,9 +103,7 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                         <option value="repay">Repay</option>
                       </select>
                     </td>
-                    <td className="p-2">
-                      {new Date(entry.date).toLocaleDateString()}
-                    </td>
+                    <td className="p-2">{new Date(entry.date).toLocaleDateString()}</td>
                     <td className="p-2 flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={handleSave}
@@ -119,9 +125,7 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                     <td className="p-2">{entry.description}</td>
                     <td className="p-2">₹{entry.amount}</td>
                     <td className="p-2">{entry.type}</td>
-                    <td className="p-2">
-                      {new Date(entry.date).toLocaleDateString()}
-                    </td>
+                    <td className="p-2">{new Date(entry.date).toLocaleDateString()}</td>
                     <td className="p-2 flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => handleEditClick(entry)}
@@ -130,7 +134,7 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(entry._id)}
+                        onClick={() => askDeleteConfirmation(entry._id)}
                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                       >
                         Delete
@@ -143,6 +147,14 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
           </tbody>
         </table>
       </div>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        message="Are you sure you want to delete this entry?"
+      />
     </div>
   );
 }
