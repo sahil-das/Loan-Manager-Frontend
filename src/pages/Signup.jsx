@@ -25,7 +25,7 @@ export default function Signup() {
     e.preventDefault();
     try {
       await signup(name, email, phone, password);
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       if (err.response && err.response.data && err.response.data.message) {
         setErr(err.response.data.message); // ✅ Show exact error

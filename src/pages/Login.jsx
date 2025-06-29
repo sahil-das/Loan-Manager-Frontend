@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../context/useAuth";
+import Loading from "../components/Loading"
 
 export default function Login() {
   const { login } = useAuth();
@@ -11,6 +12,8 @@ export default function Login() {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false); // <-- Add this
+  const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     if (user) {
@@ -21,11 +24,15 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
     try {
       await login(email, password, remember);
       navigate("/");
     } catch {
       setError("Invalid email or password");
+
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -74,13 +81,7 @@ export default function Login() {
           className="bg-blue-500 text-white py-2 px-4 w-full rounded hover:bg-blue-600 flex items-center justify-center disabled:opacity-50"
           disabled={loading}
         >
-          {loading ? (
-            <>
-              <span className="loader"></span> Logging in...
-            </>
-          ) : (
-            "Login"
-          )}
+          {loading ? "Logging in..." : "Login"}
         </button>
 
 
