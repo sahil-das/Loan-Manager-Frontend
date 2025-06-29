@@ -38,6 +38,7 @@ export default function Login() {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gradient-to-r from-pink-100 to-blue-100">
+      {loading && <Loading />} {/* <- Loader shown during login */}
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
@@ -83,7 +84,6 @@ export default function Login() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-
 
         <p className="mt-4 text-sm text-center">
           Don't have an account?{" "}
