@@ -71,10 +71,18 @@ export default function Login() {
 
         <button
           type="submit"
-          className="bg-blue-500 text-white py-2 px-4 w-full rounded hover:bg-blue-600"
+          className="bg-blue-500 text-white py-2 px-4 w-full rounded hover:bg-blue-600 flex items-center justify-center disabled:opacity-50"
+          disabled={loading}
         >
-          Login
+          {loading ? (
+            <>
+              <span className="loader"></span> Logging in...
+            </>
+          ) : (
+            "Login"
+          )}
         </button>
+
 
         <p className="mt-4 text-sm text-center">
           Don't have an account?{" "}
