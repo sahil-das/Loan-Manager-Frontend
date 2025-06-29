@@ -36,8 +36,8 @@ export default function BorrowForm({ onAdd }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!description.trim() || !amount || isNaN(amount) || Number(amount) <= 0 || !name.trim()) {
-      toast.error("Please fill in all fields correctly.");
+    if (!amount || isNaN(amount) || Number(amount) <= 0 || !name.trim()) {
+      toast.error("Please fill in Name and Amount correctly.");
       return;
     }
 
@@ -47,13 +47,13 @@ export default function BorrowForm({ onAdd }) {
 
       const entry = {
         name: formattedName,
-        description: description.trim(),
+        description: description.trim(), // optional
         amount: Number(amount),
         type,
         date,
       };
 
-      await onAdd(entry); // in case it's async
+      await onAdd(entry);
       toast.success("Entry added successfully!");
       resetForm();
     } catch (err) {
@@ -63,7 +63,7 @@ export default function BorrowForm({ onAdd }) {
     }
   };
 
-  const isSubmitDisabled = !description || !amount || !name || Number(amount) <= 0 || isSubmitting;
+  const isSubmitDisabled = !amount || !name || Number(amount) <= 0 || isSubmitting;
 
   return (
     <form
@@ -85,13 +85,12 @@ export default function BorrowForm({ onAdd }) {
 
         <input
           type="text"
-          placeholder="Description"
+          placeholder="Description (optional)"
           className="border p-2 rounded w-full md:flex-2"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          required
           aria-label="Description"
-          title="Enter description"
+          title="Enter optional description"
         />
 
         <input
@@ -111,7 +110,6 @@ export default function BorrowForm({ onAdd }) {
           onChange={(e) => setType(e.target.value)}
           className="border p-2 rounded w-full md:w-32"
           aria-label="Transaction Type"
-          title="Select borrow or repay"
         >
           <option value="borrow">Borrow</option>
           <option value="repay">Repay</option>
