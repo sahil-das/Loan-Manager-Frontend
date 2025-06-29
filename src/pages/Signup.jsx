@@ -1,33 +1,46 @@
-import { useState , useEffect } from "react";
-
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import useAuth from "../context/useAuth";
 import Loading from "../components/Loading";
 
-
 export default function Signup() {
-  const { signup } = useAuth();
+  const { signup, user } = useAuth();
   const navigate = useNavigate();
-  const { user } = useAuth();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // <-- Add this
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard", { replace: true });  // prevent going back
+      navigate("/dashboard", { replace: true });
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErr("");
     setLoading(true);
+
+    // Password validation: must be more than 6 characters
+    if (password.length <= 6) {
+      setErr("Password must be more than 6 characters");
+      setLoading(false);
+      return;
+    }
+
+    // Phone validation: exactly 10 digits
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+      setErr("Phone number must be exactly 10 digits");
+      setLoading(false);
+      return;
+    }
+
     try {
       await signup(name, email, phone, password);
       navigate("/");
@@ -44,9 +57,12 @@ export default function Signup() {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gradient-to-r from-yellow-100 to-teal-100">
-    {loading && <Loading />}
+      {loading && <Loading />}
 
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded shadow-md w-full max-w-sm"
+      >
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
 
         {err && <p className="text-red-500 text-sm mb-4">{err}</p>}
@@ -58,6 +74,7 @@ export default function Signup() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          aria-label="Full name"
         />
 
         <input
@@ -67,16 +84,25 @@ export default function Signup() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          aria-label="Email"
         />
+
         <input
           type="tel"
           placeholder="Phone"
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-1 border rounded"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           required
+          aria-label="Phone number"
         />
-        <div className="relative mb-4">
+        {phone && !/^\d{10}$/.test(phone) && (
+          <p className="text-red-500 text-xs mb-3">
+            Phone number must be exactly 10 digits
+          </p>
+        )}
+
+        <div className="relative mb-1">
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
@@ -84,6 +110,7 @@ export default function Signup() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            aria-label="Password"
           />
           <button
             type="button"
@@ -94,6 +121,11 @@ export default function Signup() {
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
+        {password && password.length <= 6 && (
+          <p className="text-red-500 text-xs mb-3">
+            Password must be more than 6 characters
+          </p>
+        )}
 
         <button
           type="submit"
@@ -103,12 +135,11 @@ export default function Signup() {
           {loading ? "Creating Account..." : "Sign Up"}
         </button>
 
-
         <p className="mt-4 text-sm text-center">
           Already have an account?{" "}
-          <a href="/login" className="text-green-500 hover:underline">
+          <Link to="/login" className="text-green-500 hover:underline">
             Login
-          </a>
+          </Link>
         </p>
       </form>
     </div>
