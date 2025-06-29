@@ -1,103 +1,101 @@
-import React, { useState } from "react";
-import BorrowForm from "./BorrowForm";
-import ConfirmDialog from "./ConfirmDialog";
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
-export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, onDelete }) {
-  const [showForm, setShowForm] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [entryToDelete, setEntryToDelete] = useState(null);
+export default function BorrowForm({ onAdd, defaultName }) {
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState("borrow");
+  const [date, setDate] = useState("");
 
-  // Filter and sort entries by this person
-  const filtered = entries
-    .filter((e) => e.name === person)
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  // Auto-fill today's date on mount
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    setDate(today);
+  }, []);
 
-  let balance = 0;
-
-  const handleAdd = (entry) => {
-    onAdd({ ...entry, name: person });
-    setShowForm(false);
+  const resetForm = () => {
+    setDescription("");
+    setAmount("");
+    setType("borrow");
+    const today = new Date().toISOString().split("T")[0];
+    setDate(today);
   };
 
-  const requestDelete = (entryId) => {
-    setEntryToDelete(entryId);
-    setConfirmOpen(true);
-  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const confirmDelete = () => {
-    if (entryToDelete) {
-      onDelete(entryToDelete);
-      setEntryToDelete(null);
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      toast.error("Please enter a valid amount.");
+      return;
     }
+
+    const entry = {
+      name: defaultName,
+      description: description.trim() || "", // Optional
+      amount: Number(amount),
+      type,
+      date,
+    };
+
+    onAdd(entry);
+    toast.success("Entry added successfully!");
+    resetForm();
   };
 
-  const rows = filtered.map((e) => {
-    if (e.type === "borrow") balance += Number(e.amount);
-    else if (e.type === "repay") balance -= Number(e.amount);
-
-    return (
-      <tr key={e._id} className="border-t">
-        <td className="py-2">{new Date(e.date).toLocaleDateString()}</td>
-        <td className="py-2">
-          {e.type === "borrow" ? `Borrowed ₹${e.amount}` : `Repaid ₹${e.amount}`}
-        </td>
-        <td className="py-2">{balance}</td>
-        <td className="py-2">
-          <button
-            className="text-blue-600 hover:underline"
-            onClick={() => onEdit?.(e._id, e)}
-          >
-            Edit
-          </button>
-        </td>
-        <td className="py-2">
-          <button
-            className="text-red-600 hover:underline"
-            onClick={() => requestDelete(e._id)}
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    );
-  });
+  const isSubmitDisabled = !amount || Number(amount) <= 0;
 
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <button className="mb-4 text-blue-600 hover:underline" onClick={onBack}>
-        &larr; Back to Overview
-      </button>
-      <h3 className="text-xl font-bold mb-2">Details for: {person}</h3>
-      <button
-        className="mb-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => setShowForm(!showForm)}
-      >
-        {showForm ? "Cancel" : `Add Borrow/Repay for ${person}`}
-      </button>
+    <form
+      onSubmit={handleSubmit}
+      className="mb-6 bg-white p-4 rounded shadow w-full"
+    >
+      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
+        <input
+          type="text"
+          placeholder="Description (optional)"
+          className="border p-2 rounded w-full md:flex-2"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
-      {showForm && <BorrowForm onAdd={handleAdd} />}
+        <input
+          type="number"
+          placeholder="Amount"
+          className="border p-2 rounded w-full md:w-32"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          min="1"
+          required
+        />
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-3 border-b">Date</th>
-              <th className="py-2 px-3 border-b">Action</th>
-              <th className="py-2 px-3 border-b">Balance After</th>
-              <th className="py-2 px-3 border-b">Edit</th>
-              <th className="py-2 px-3 border-b">Delete</th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </table>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="border p-2 rounded w-full md:w-32"
+        >
+          <option value="borrow">Borrow</option>
+          <option value="repay">Repay</option>
+        </select>
+
+        <input
+          type="date"
+          className="border p-2 rounded w-full md:w-40"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+
+        <button
+          type="submit"
+          disabled={isSubmitDisabled}
+          className={`text-white px-4 py-2 rounded w-full md:w-auto ${
+            isSubmitDisabled
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
+        >
+          Add
+        </button>
       </div>
-
-      <ConfirmDialog
-        open={confirmOpen}
-        message="Do you really want to delete this entry?"
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={confirmDelete}
-      />
-    </div>
+    </form>
   );
 }
