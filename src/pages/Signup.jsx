@@ -42,7 +42,7 @@ export default function Signup() {
     }
 
     try {
-      await signup(name, email, phone, password);
+      await signup(name, email.toLowerCase(), phone, password);
       navigate("/");
     } catch (err) {
       if (err.response && err.response.data && err.response.data.message) {
