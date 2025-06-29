@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 
 export default function BorrowForm({ onAdd }) {
@@ -7,11 +7,13 @@ export default function BorrowForm({ onAdd }) {
   const [type, setType] = useState("borrow");
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const nameRef = useRef(null); // for auto-focus
 
-  // Auto-fill today's date on component mount
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
     setDate(today);
+    nameRef.current?.focus(); // auto-focus on mount
   }, []);
 
   const resetForm = () => {
@@ -21,6 +23,7 @@ export default function BorrowForm({ onAdd }) {
     setName("");
     const today = new Date().toISOString().split("T")[0];
     setDate(today);
+    nameRef.current?.focus();
   };
 
   const capitalizeWords = (str) =>
@@ -30,7 +33,7 @@ export default function BorrowForm({ onAdd }) {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!description.trim() || !amount || isNaN(amount) || Number(amount) <= 0 || !name.trim()) {
@@ -38,22 +41,29 @@ export default function BorrowForm({ onAdd }) {
       return;
     }
 
-    const formattedName = capitalizeWords(name.trim());
+    setIsSubmitting(true);
+    try {
+      const formattedName = capitalizeWords(name.trim());
 
-    const entry = {
-      name: formattedName,
-      description: description.trim(),
-      amount: Number(amount),
-      type,
-      date,
-    };
+      const entry = {
+        name: formattedName,
+        description: description.trim(),
+        amount: Number(amount),
+        type,
+        date,
+      };
 
-    onAdd(entry);
-    toast.success("Entry added successfully!");
-    resetForm();
+      await onAdd(entry); // in case it's async
+      toast.success("Entry added successfully!");
+      resetForm();
+    } catch (err) {
+      toast.error("Failed to add entry.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const isSubmitDisabled = !description || !amount || !name || Number(amount) <= 0;
+  const isSubmitDisabled = !description || !amount || !name || Number(amount) <= 0 || isSubmitting;
 
   return (
     <form
@@ -62,12 +72,15 @@ export default function BorrowForm({ onAdd }) {
     >
       <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
         <input
+          ref={nameRef}
           type="text"
           placeholder="Name (Person)"
           className="border p-2 rounded w-full md:flex-1"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          aria-label="Person's Name"
+          title="Enter the person's name"
         />
 
         <input
@@ -77,6 +90,8 @@ export default function BorrowForm({ onAdd }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
+          aria-label="Description"
+          title="Enter description"
         />
 
         <input
@@ -87,12 +102,16 @@ export default function BorrowForm({ onAdd }) {
           onChange={(e) => setAmount(e.target.value)}
           min="1"
           required
+          aria-label="Amount"
+          title="Enter a valid amount greater than 0"
         />
 
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
           className="border p-2 rounded w-full md:w-32"
+          aria-label="Transaction Type"
+          title="Select borrow or repay"
         >
           <option value="borrow">Borrow</option>
           <option value="repay">Repay</option>
@@ -103,19 +122,30 @@ export default function BorrowForm({ onAdd }) {
           className="border p-2 rounded w-full md:w-40"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          aria-label="Date"
         />
 
-        <button
-          type="submit"
-          disabled={isSubmitDisabled}
-          className={`text-white px-4 py-2 rounded w-full md:w-auto ${
-            isSubmitDisabled
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
-          }`}
-        >
-          Add
-        </button>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button
+            type="submit"
+            disabled={isSubmitDisabled}
+            className={`text-white px-4 py-2 rounded w-full md:w-auto ${
+              isSubmitDisabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
+          >
+            {isSubmitting ? "Adding..." : "Add"}
+          </button>
+
+          <button
+            type="button"
+            onClick={resetForm}
+            className="text-gray-600 border border-gray-400 px-4 py-2 rounded hover:bg-gray-100"
+          >
+            Reset
+          </button>
+        </div>
       </div>
     </form>
   );
