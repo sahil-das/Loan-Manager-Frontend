@@ -1,17 +1,30 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
-export default function BorrowForm({ onAdd, defaultName = "" }) {
+export default function BorrowForm({
+  onAdd,
+  defaultName = "",
+  defaultValues = null,
+  onCancel = null,
+}) {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("borrow");
   const [name, setName] = useState(defaultName);
   const [date, setDate] = useState("");
 
+  // Load form data when editing
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    setDate(today);
-  }, []);
+    if (defaultValues) {
+      setDescription(defaultValues.description || "");
+      setAmount(defaultValues.amount?.toString() || "");
+      setType(defaultValues.type || "borrow");
+      setName(defaultValues.name || defaultName);
+      setDate(defaultValues.date?.split("T")[0] || new Date().toISOString().split("T")[0]);
+    } else {
+      resetForm(); // reset if not editing
+    }
+  }, [defaultValues, defaultName]);
 
   const resetForm = () => {
     setDescription("");
@@ -41,24 +54,26 @@ export default function BorrowForm({ onAdd, defaultName = "" }) {
 
     const entry = {
       name: finalName,
-      description: description.trim(), // description is optional
+      description: description.trim(),
       amount: Number(amount),
       type,
       date,
     };
 
     onAdd(entry);
-    toast.success("Entry added successfully!");
-    resetForm();
+
+    if (!defaultValues) {
+      toast.success("Entry added successfully!");
+      resetForm();
+    } else {
+      toast.success("Entry updated successfully!");
+    }
   };
 
   const isSubmitDisabled = !amount || Number(amount) <= 0 || (!name && !defaultName);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mb-6 bg-white p-4 rounded shadow w-full"
-    >
+    <form onSubmit={handleSubmit} className="mb-6 bg-white p-4 rounded shadow w-full">
       <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
         {!defaultName && (
           <input
@@ -109,13 +124,21 @@ export default function BorrowForm({ onAdd, defaultName = "" }) {
           type="submit"
           disabled={isSubmitDisabled}
           className={`text-white px-4 py-2 rounded w-full md:w-auto ${
-            isSubmitDisabled
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
+            isSubmitDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
           }`}
         >
-          Add
+          {defaultValues ? "Update" : "Add"}
         </button>
+
+        {defaultValues && onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-white px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded w-full md:w-auto"
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </form>
   );

@@ -6,9 +6,12 @@ export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, o
   const [showForm, setShowForm] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDeleteId, setToDeleteId] = useState(null);
+  const [editEntry, setEditEntry] = useState(null); // For editing
 
   // Filter and sort entries for this person
-  const filtered = entries.filter((e) => e.name === person).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const filtered = entries
+    .filter((e) => e.name === person)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   // Calculate running balance
   let balance = 0;
@@ -22,7 +25,13 @@ export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, o
         <td>{e.type === "borrow" ? `Borrowed ₹${e.amount}` : `Repaid ₹${e.amount}`}</td>
         <td>{balance}</td>
         <td>
-          <button className="text-blue-600" onClick={() => onEdit && onEdit(e._id, e)}>
+          <button
+            className="text-blue-600"
+            onClick={() => {
+              setEditEntry(e);        // set data to be edited
+              setShowForm(true);      // show form
+            }}
+          >
             Edit
           </button>
         </td>
@@ -41,6 +50,7 @@ export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, o
     );
   });
 
+  // Handle Confirm Delete
   const handleConfirmDelete = () => {
     if (toDeleteId && onDelete) {
       onDelete(toDeleteId);
@@ -48,9 +58,21 @@ export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, o
     setToDeleteId(null);
   };
 
-  const handleAdd = (entry) => {
-    onAdd({ ...entry, name: person });
+  // Handle Add or Edit entry
+  const handleSubmit = (entry) => {
+    if (editEntry) {
+      onEdit && onEdit(editEntry._id, { ...editEntry, ...entry });
+      setEditEntry(null);
+    } else {
+      onAdd({ ...entry, name: person });
+    }
     setShowForm(false);
+  };
+
+  // Handle cancel
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditEntry(null);
   };
 
   return (
@@ -62,12 +84,22 @@ export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, o
 
       <button
         className="mb-4 px-3 py-1 bg-blue-500 text-white rounded"
-        onClick={() => setShowForm(!showForm)}
+        onClick={() => {
+          setShowForm(!showForm);
+          setEditEntry(null); // Exit edit mode if clicking "Add"
+        }}
       >
         {showForm ? "Cancel" : `Add Borrow/Repay for ${person}`}
       </button>
 
-      {showForm && <BorrowForm onAdd={handleAdd} defaultName={person} />}
+      {showForm && (
+        <BorrowForm
+          onAdd={handleSubmit}
+          defaultName={person}
+          defaultValues={editEntry} // Pre-fill values if editing
+          onCancel={handleCancel}   // Optional cancel prop
+        />
+      )}
 
       <table className="w-full text-left border-t mt-4">
         <thead>
