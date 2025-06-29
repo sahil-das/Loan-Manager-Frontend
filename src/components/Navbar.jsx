@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../context/useAuth";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+const [showConfirmLogout, setShowConfirmLogout] = useState(false);
+
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -25,14 +27,16 @@ export default function Navbar() {
     setMenuOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    const confirmed = window.confirm("Are you sure you want to log out?");
-    if (!confirmed) return;
+  const confirmLogout = () => {
+  setShowConfirmLogout(true);
+};
 
-    logout();
-    toast.success("Logged out successfully!");
-    navigate("/login");
-  };
+const handleLogoutConfirmed = () => {
+  logout();
+  toast.success("Logged out successfully!");
+  navigate("/login");
+  setShowConfirmLogout(false);
+};
 
 
   const renderMenuItems = () => (
@@ -46,7 +50,7 @@ export default function Navbar() {
         <>
           <span className="text-sm">{user.name}</span>
           <button
-            onClick={handleLogout}
+            onClick={confirmLogout}
             className="bg-red-500 px-3 py-1 rounded hover:bg-red-600 text-sm"
           >
             Logout
@@ -109,5 +113,27 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+{showConfirmLogout && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white text-black p-6 rounded-lg shadow-md w-[90%] max-w-sm">
+      <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
+      <p className="mb-6">Are you sure you want to log out?</p>
+      <div className="flex justify-end gap-4">
+        <button
+          onClick={() => setShowConfirmLogout(false)}
+          className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleLogoutConfirmed}
+          className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+)}
   );
 }
