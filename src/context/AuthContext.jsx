@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
+
   const [authLoading, setAuthLoading] = useState(true);
 
   const login = async (email, password, remember) => {
@@ -54,15 +55,18 @@ export const AuthProvider = ({ children }) => {
       );
       setUser(res.data.user);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-    } catch {
+    } catch (err) {
+      console.error("Refresh token failed:", err.response?.data || err.message);
       setUser(null);
       localStorage.removeItem("user");
     }
   };
 
   useEffect(() => {
-    // Try to refresh token on mount, or use localStorage user if available
-    if (!user) {
+    // Only try to refresh if user exists in localStorage
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser && storedUser !== "undefined") {
       refreshToken().finally(() => setAuthLoading(false));
     } else {
       setAuthLoading(false);

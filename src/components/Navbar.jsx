@@ -24,15 +24,13 @@ export default function Navbar() {
   }, [currentTitle]);
 
   useEffect(() => {
-    setMenuOpen(false);
+    setMenuOpen(false); // Close menu on route change
   }, [location.pathname]);
 
-  const confirmLogout = () => {
-    setShowConfirmLogout(true);
-  };
+  const confirmLogout = () => setShowConfirmLogout(true);
 
-  const handleLogoutConfirmed = () => {
-    logout();
+  const handleLogoutConfirmed = async () => {
+    await logout();
     toast.success("Logged out successfully!");
     navigate("/login");
     setShowConfirmLogout(false);
@@ -47,7 +45,7 @@ export default function Navbar() {
       )}
       {user ? (
         <>
-          <span>{user.name}</span>
+          <span className="font-medium">{user.name}</span>
           <button
             onClick={confirmLogout}
             className="bg-red-500 px-3 py-1 rounded hover:bg-red-600 text-white mt-2 sm:mt-0"
@@ -73,12 +71,10 @@ export default function Navbar() {
       {/* Navbar */}
       <nav className="bg-blue-600 text-white shadow mb-6">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          {/* Left Side: Logo */}
-          <div className="flex items-center gap-4">
-            <Link to="/" className="font-bold text-lg hover:underline">
-              Borrow Book
-            </Link>
-          </div>
+          {/* Logo */}
+          <Link to="/" className="font-bold text-lg hover:underline">
+            Borrow Book
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden sm:flex gap-4 items-center">{renderMenuItems()}</div>
@@ -107,13 +103,15 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu (Right-aligned dropdown) */}
+        {/* Mobile Menu */}
         <div
           className={`sm:hidden transition-all duration-300 overflow-hidden ${
             menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="px-4 pb-4 flex flex-col items-end gap-2">{renderMenuItems()}</div>
+          <div className="px-4 pb-4 flex flex-col items-end gap-2">
+            {renderMenuItems()}
+          </div>
         </div>
       </nav>
 
