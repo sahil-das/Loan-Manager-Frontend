@@ -26,7 +26,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true); // Start loading
     try {
-      await login(email, password, remember);
+      await login(email.toLowerCase(), password, remember);
       navigate("/");
     } catch {
       setError("Invalid email or password");
