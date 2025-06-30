@@ -64,7 +64,11 @@ export default function Dashboard() {
       .reduce((sum, e) => sum + Number(e.amount), 0);
     const outstanding = totalBorrow - totalRepay;
     const lastDate = list.length
-      ? new Date(Math.max(...list.map((e) => new Date(e.date)))).toLocaleDateString()
+      ? new Date(Math.max(...list.map((e) => new Date(e.date)))).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
       : "-";
 
     return (
