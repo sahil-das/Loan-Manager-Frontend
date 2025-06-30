@@ -69,7 +69,7 @@ export default function Navbar() {
   return (
     <>
       {/* Navbar */}
-      <nav className="bg-gradient-to-r from-navy to-blue-700 text-white shadow mb-6">
+        <nav className="bg-blue-600 text-white shadow mb-6">
     
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           {/* Logo */}
