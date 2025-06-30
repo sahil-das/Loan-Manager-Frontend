@@ -6,14 +6,17 @@ export default function generatePDF(groupedData) {
 
   const formatCurrency = (amount) => `Rs. ${Number(amount).toLocaleString("en-IN")}`;
 
-  // --- PAGE 1: COVER PAGE ---
-  doc.setFontSize(22);
-  doc.text("Borrow Book", 105, 60, { align: "center" });
+  const svgUrl = "vite.svg"; // Replace with actual URL or path
+  const svgText = await fetch(svgUrl).then(res => res.text());
+  const svgBase64 = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgText)))}`;
 
+  // --- PAGE 1: COVER PAGE ---
+  doc.addImage(svgBase64, 'SVG', 80, 30, 50, 50); // Logo
+  doc.setFontSize(20);
+  doc.text("Borrow Book", 105, 90, { align: "center" }); // Title
   doc.setFontSize(14);
-  doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 80, {
-    align: "center",
-  });
+  doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 105, { align: "center" });
+
 
   // --- PAGE 2: SUMMARY OVERVIEW ---
   doc.addPage();
