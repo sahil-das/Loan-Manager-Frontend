@@ -26,7 +26,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true); // Start loading
     try {
-      await login(email.toLowerCase(), password, remember);
+      await login(email.toLowerCase(), password);
       navigate("/");
     } catch {
       setError("Invalid email or password");
@@ -70,11 +70,6 @@ export default function Login() {
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
-
-        <label className="flex items-center text-sm mb-4">
-          <input type="checkbox" checked={remember} onChange={() => setRemember(!remember)} />
-          <span className="ml-2">Remember Me</span>
-        </label>
 
         <button
           type="submit"
