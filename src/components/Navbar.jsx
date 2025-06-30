@@ -73,9 +73,11 @@ export default function Navbar() {
     
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="font-bold text-lg hover:underline">
-            Borrow Book
-          </Link>
+          <img
+          src="/img/logo.png"
+          alt="Borrow Book Logo"
+          className="h-10 sm:h-12 w-auto"
+          />
 
           {/* Desktop Menu */}
           <div className="hidden sm:flex gap-4 items-center">{renderMenuItems()}</div>
