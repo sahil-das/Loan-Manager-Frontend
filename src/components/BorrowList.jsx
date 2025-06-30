@@ -103,7 +103,8 @@ export default function BorrowList({ entries, onEdit, onDelete }) {
                         <option value="repay">Repay</option>
                       </select>
                     </td>
-                    <td className="p-2">{new Date(entry.date).toLocaleDateString()}</td>
+                    <td className="p-2">{new Date(e.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
+
                     <td className="p-2 flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={handleSave}
