@@ -153,5 +153,5 @@ export default function generatePDF(groupedData) {
   }
 
   // --- SAVE PDF ---
-  doc.save("loan-report.pdf");
+  doc.save("Borrow Book.pdf");
 }
