@@ -21,7 +21,7 @@ export default function BorrowDetail({ person, entries, onBack, onAdd, onEdit, o
 
     return (
       <tr key={e._id}>
-        <td>{new Date(e.date).toLocaleDateString()}</td>
+        <td>{new Date(e.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
         <td>{e.type === "borrow" ? `Borrowed ₹${e.amount}` : `Repaid ₹${e.amount}`}</td>
         <td>{balance}</td>
         <td>
