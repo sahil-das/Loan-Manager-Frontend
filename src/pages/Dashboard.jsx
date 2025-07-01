@@ -6,6 +6,8 @@ import BorrowForm from "../components/BorrowForm";
 import BorrowList from "../components/BorrowList";
 import BorrowDetail from "../components/BorrowDetail";
 import generatePDF from "../utils/generatePDF";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -13,6 +15,7 @@ export default function Dashboard() {
   const { user, authLoading, logout } = useAuth();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const navigate = useNavigate();
 
@@ -94,8 +97,28 @@ export default function Dashboard() {
     .reduce((sum, e) => sum + Number(e.amount), 0);
   const outstanding = totalBorrowed - totalPaid;
 
+  const handlePDFDownload = async () => {
+    try {
+      setPdfLoading(true);
+      const blob = await generatePDF(grouped);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Borrow Book.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded successfully!");
+    } catch (err) {
+      console.error("PDF generation failed", err);
+      toast.error("Failed to generate PDF.");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      <ToastContainer />
       <div className="max-w-5xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-center">Manage Borrow / Repay</h2>
 
@@ -136,10 +159,35 @@ export default function Dashboard() {
 
                 <div className="flex justify-center sm:justify-end mb-4">
                   <button
-                    onClick={() => generatePDF(grouped)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    onClick={handlePDFDownload}
+                    disabled={pdfLoading}
+                    className={`flex items-center gap-2 px-4 py-2 rounded text-white transition ${
+                      pdfLoading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                    }`}
                   >
-                    Download PDF
+                    {pdfLoading && (
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
+                      </svg>
+                    )}
+                    {pdfLoading ? "Generating..." : "Download PDF"}
                   </button>
                 </div>
 
