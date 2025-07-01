@@ -1,15 +1,21 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export default function generatePDF(groupedData) {
+export default async function generatePDF(groupedData) {
   const doc = new jsPDF();
 
   const formatCurrency = (amount) => `Rs. ${Number(amount).toLocaleString("en-IN")}`;
 
-  const svgUrl = "/vite.svg"; // Replace with actual URL or path
-  const svgText = await fetch(svgUrl).then(res => res.text());
+  const svgUrl = "/vite.svg"; // works because vite.svg is in public/
+  const response = await fetch(svgUrl);
+  if (!response.ok) {
+    console.error("Failed to fetch SVG");
+    return;
+  }
+  const svgText = await response.text();
   const svgBase64 = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgText)))}`;
 
+  // ...rest of your PDF generation code
   // --- PAGE 1: COVER PAGE ---
   doc.addImage(svgBase64, 'SVG', 80, 30, 50, 50); // Logo
   doc.setFontSize(20);
