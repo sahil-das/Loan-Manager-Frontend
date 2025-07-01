@@ -6,7 +6,7 @@ export default function generatePDF(groupedData) {
 
   const formatCurrency = (amount) => `Rs. ${Number(amount).toLocaleString("en-IN")}`;
 
-  const svgUrl = "vite.svg"; // Replace with actual URL or path
+  const svgUrl = "/vite.svg"; // Replace with actual URL or path
   const svgText = await fetch(svgUrl).then(res => res.text());
   const svgBase64 = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgText)))}`;
 
