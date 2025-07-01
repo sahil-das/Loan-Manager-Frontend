@@ -16,21 +16,15 @@ export default async function generatePDF(groupedData) {
   const formatDate = (dateStr) =>
     new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" }).format(new Date(dateStr));
 
-  let svgBase64 = null;
-  try {
-    const response = await fetch("/vite.svg");
-    if (response.ok) {
-      const svgText = await response.text();
-      svgBase64 = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgText)))}`;
-    }
-  } catch (err) {
-    console.warn("Logo not loaded:", err.message);
-  }
-
+  const logo = "/logo.png"; // make sure this is a valid PNG path (public folder)
+const img = new Image();
+img.src = logo;
+img.onload = () => {
+  doc.addImage(img, "PNG", 10, 10, 50, 20); // x, y, width, height
+  // continue with doc.text() and save
+};
   // --- Cover Page ---
-  if (svgBase64) {
-    doc.addImage(svgBase64, 'SVG', 80, 30, 50, 50);
-  }
+
 
   doc.setFontSize(20);
   doc.text("Borrow Book", 105, 90, { align: "center" });
